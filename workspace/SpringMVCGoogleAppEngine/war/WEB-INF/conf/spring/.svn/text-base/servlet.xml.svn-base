@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+
+	<!-- Scans the classpath of this application for @Components to deploy as beans -->
+	<context:component-scan base-package="com.pru.hk.web.controller" />
+
+
+	
+	<bean name="configs" class="java.util.Properties">
+	   <constructor-arg>
+	   <props>	   	 
+	   </props>
+	   </constructor-arg>
+	</bean>	
+	
+	<!-- Configures the @Controller programming model -->
+	<mvc:annotation-driven />
+
+	<!-- Forwards requests to the "/" resource to the "welcome" view -->
+	<mvc:view-controller path="/" view-name="welcome"/>
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources/ directory -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<bean id="urlConnectionUtil" class="com.pru.hk.sp.util.URLConnectionUtil">
+		<property name="env" value="${env}" />
+	</bean>
+	
+	<!-- Saves a locale change using a cookie -->
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver">
+		<property name="cookieMaxAge" value="-1"/>
+		<property name="defaultLocale" value="zh"/>
+	</bean>
+
+	<!-- Configures theme source -->
+	<bean id="themeSource" class="org.springframework.ui.context.support.ResourceBundleThemeSource">
+		<property name="basenamePrefix" value="theme." />
+	</bean>
+
+	<!-- Selects a fixed theme -->
+	<bean id="themeResolver" class="org.springframework.web.servlet.theme.FixedThemeResolver">
+		<property name="defaultThemeName" value="theme" />
+	</bean>
+
+	<!-- Application Message Bundle -->
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+			</list>
+		</property>
+		<property name="cacheSeconds" value="-1" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	
+	<!-- Defines error view names for exceptions caught -->
+
+	<bean id="exceptionResolver" class="com.pru.hk.web.interceptor.sp.LoggingExceptionResolver">
+		<property name="warnLogCategory" value="com.pru.hk.sp.web" />
+		<property name="exceptionMappings">
+			<props>			    
+				<prop key="com.pru.hk.web.interceptor.sp.SessionExpiredException">error/sessionExpired</prop>
+				<prop key="java.lang.Exception">error/generalError</prop>
+				<prop key="com.pru.hk.sp.adapter.CitiPolicyServiceException">error/generalErrorCiti</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- Resolves view names to protected .jsp resources within the /WEB-INF/views directory -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/view/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>	
+
+</beans>

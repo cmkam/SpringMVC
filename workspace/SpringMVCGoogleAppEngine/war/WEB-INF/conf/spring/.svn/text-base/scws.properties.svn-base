@@ -1,0 +1,36 @@
+env=local
+
+# The base URL to SOAP-based web services
+#adapter.soap.url=https://localhost:8445/appsvc/service/soap
+aessvc.soap.url=https://localhost:8443/aessvc/service/soap
+adapter.soap.url=https://localhost:8443/appsvc/service/soap
+#adapter.soap.url=https://appsvcuat.prudential.com.hk/appsvc/service/soap
+aessvc.soap.url=https://localhost:8443/aessvc/service/soap
+
+# The pattern (regular expression) to match the remote addresses allowed for sales login pages
+# Refer to the J2SE Pattern class for details
+#
+# E.g. for 111.222.333.444, the expression is 111\\.222\\.333\\.444
+#      for 111.222.*, the expression is 111\\.222\\..*
+eselling.login.remoteAddr=.*
+
+# The information of the old CWS website
+cws.server.name=cwsdev.prudential.com.hk
+sso.server.name=ssodev.prudential.com.hk
+ap.server.name=apdev.prudential.com.hk
+esv.server.name=esvdev.prudential.com.hk
+cws.config.home=C:/work/projects/cws2/Kernl2.1/config/product/cws
+
+cws.travel.url=https://cwsdev.prudential.com.hk/PruServlet?module=eselling&purpose=viewBuyTravelIntro&prod_cd=TPC
+cws.url=http://cwsdev.prudential.com.hk
+
+# The username and password to access the WS-Security enabled services
+adapter.soap.wssecurity.user=scws
+adapter.soap.wssecurity.password=scws-SoAp?Service*20110214
+
+aessvc.soap.wssecurity.user=sample-username
+aessvc.soap.wssecurity.password=sample-password
+
+# Password of the keystore and truststore files
+security.keystore.password=abcd1234
+security.truststore.password=abcd1234

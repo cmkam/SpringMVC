@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:sec="http://cxf.apache.org/configuration/security"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd">
+
+
+	<jaxws:client
+		id="spStaffSoapService"
+		serviceClass="com.pru.hk.stub.sp.ws.SpStaffSoapService"
+		address="${adapter.soap.url}/SpStaffService">
+		<jaxws:inInterceptors>
+			<ref
+				bean="loggingInInterceptor" />
+		</jaxws:inInterceptors>
+		<jaxws:outInterceptors>
+			<ref
+				bean="wsSecurityWss4JOutInterceptor" />
+			<ref
+				bean="loggingOutInterceptor" />
+		</jaxws:outInterceptors>
+	</jaxws:client>
+
+
+	<!-- Logs the web service requests and responses -->
+	<bean
+		id="loggingInInterceptor"
+		class="com.pru.hk.ws.soap.listener.LoggingInInterceptorWithMasking">
+		<property
+			name="prettyLogging"
+			value="true" />
+		<property
+			name="tagsToMask"
+			value="credCardNo|cvv|cardNumber|hkid|passportNo" />
+	</bean>
+
+	<bean
+		id="loggingOutInterceptor"
+		class="com.pru.hk.ws.soap.listener.LoggingOutInterceptorWithMasking">
+		<property
+			name="prettyLogging"
+			value="true" />
+		<property
+			name="tagsToMask"
+			value="credCardNo|cvv|cardNumber|hkid|passportNo" />
+	</bean>
+
+	<!-- Enables WS-Security for web service -->
+	<bean
+		id="wsSecurityWss4JOutInterceptor"
+		class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+		<constructor-arg>
+			<map>
+				<entry
+					key="action"
+					value="UsernameToken Timestamp" />
+				<entry
+					key="user"
+					value="${adapter.soap.wssecurity.user}" />
+				<entry
+					key="passwordType"
+					value="PasswordDigest" />
+				<entry
+					key="passwordCallbackRef"
+					value-ref="clientPasswordCallBack" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean
+		id="clientPasswordCallBack"
+		class="com.pru.hk.sp.adapter.ws.soap.ClientPasswordCallback">
+		<property
+			name="password"
+			value="${adapter.soap.wssecurity.password}" />
+	</bean>
+
+    
+    <!-- Enables WS-Security for aessvc web service -->
+	<bean id="wsSecurityWss4JOutInterceptorAES" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+		<constructor-arg>
+			<map>
+        <entry key="action" value="UsernameToken Timestamp" />
+				<entry key="user" value="${aessvc.soap.wssecurity.user}" />
+				<entry key="passwordType" value="PasswordDigest" />
+				<entry key="passwordCallbackRef" value-ref="clientPasswordCallBackAES" />
+			</map>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="clientPasswordCallBackAES" class="com.pru.hk.sp.adapter.ws.soap.ClientPasswordCallback">
+		<property name="password" value="${aessvc.soap.wssecurity.password}" />
+	</bean>
+
+	<!-- Defines the keystore for WS-Security. -->
+	<!-- Remove the http:tlsClientParameters tag when deploying to DEV, UAT and Prod. Only retain 
+		it when deploying to LOCAL. -->
+	<http:conduit
+		name="*.http-conduit">
+		<!-- set the receive timeout to 2 mins, ie the web service call will wait 
+			for 2 mins the most until receive response -->
+		<http:client
+			ReceiveTimeout="120000" />
+
+		<http:tlsClientParameters
+			secureSocketProtocol="SSL"
+			disableCNCheck="true">
+			<sec:keyManagers
+				keyPassword="${security.keystore.password}">
+				<sec:keyStore
+					type="JKS"
+					password="${security.keystore.password}"
+					resource="keystore/sp.jks" />
+			</sec:keyManagers>
+			<sec:trustManagers>
+				<sec:keyStore
+					type="JKS"
+					password="${security.truststore.password}"
+					resource="keystore/spTrustStore.key" />
+			</sec:trustManagers>
+			<sec:cipherSuitesFilter>
+				<!-- these filters ensure that a ciphersuite with export-suitable or 
+					null encryption is used, but exclude anonymous Diffie-Hellman key change 
+					as this is vulnerable to man-in-the-middle attacks -->
+				<sec:include>.*_EXPORT_.*</sec:include>
+				<sec:include>.*_EXPORT1024_.*</sec:include>
+				<sec:include>.*_WITH_DES_.*</sec:include>
+				<sec:include>.*_WITH_NULL_.*</sec:include>
+				<sec:include>SSL_RSA_WITH_RC4_128_MD5</sec:include>
+				<sec:include>SSL_RSA_WITH_RC4_128_SHA</sec:include>
+				<sec:exclude>.*_DH_anon_.*</sec:exclude>
+			</sec:cipherSuitesFilter>
+		</http:tlsClientParameters>
+	</http:conduit>
+
+</beans>
