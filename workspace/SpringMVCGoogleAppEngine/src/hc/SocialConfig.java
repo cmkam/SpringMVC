@@ -1,4 +1,4 @@
-package hc.basic;
+package hc;
 
 import javax.inject.Inject;
 

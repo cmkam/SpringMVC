@@ -1,6 +1,7 @@
 package hc.basic.mvc;
 
 import hc.basic.dto.Tag;
+import hc.domain.Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,12 +9,16 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.ObjectifyFactory;
 
 @Controller
 @RequestMapping(value = "/event")
@@ -56,5 +61,29 @@ public class HcEventController {
 		return result;
 
 	}
+	
+	@Autowired private ObjectifyFactory objectifyFactory;
+	
+	@RequestMapping(value = "/addProduct", method = RequestMethod.GET)
+	public @ResponseBody
+	String addProduct(Model model) {		
+		Objectify ofy = objectifyFactory.begin();
+		Product p = new Product();
+		p.setName("cmktt");
+		p.setDescription("d");
+		ofy.put(p);
+		return "Success";
+
+	}	
+		
+	@RequestMapping(value = "/getProduct", method = RequestMethod.GET)
+	public @ResponseBody
+	Product getProduct(@RequestParam String tagName) {
+		Objectify ofy = objectifyFactory.begin();
+		
+		Product p = ofy.query(Product.class).filter("name", tagName).get();	
+
+		return p;
+	}		
 
 }
